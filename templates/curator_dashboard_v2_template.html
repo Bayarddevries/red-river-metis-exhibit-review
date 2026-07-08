@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red River Metis National Heritage Centre - Exhibit Plan Review</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f0eb; color: #2d2a24; }
+.header { background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3e 100%); color: #f5f0eb; padding: 1.5rem; text-align: center; }
+.header h1 { font-size: 1.4rem; }
+.header p { color: #b8c9b0; margin-top: 0.3rem; font-size: 0.85rem; }
+.header .subtitle { color: #9ab88a; font-size: 0.8rem; margin-top: 0.2rem; }
+
+.tabs { display: flex; background: #fff; border-bottom: 2px solid #1a3a2a; position: sticky; top: 0; z-index: 100; }
+.tab { flex: 1; padding: 0.7rem; text-align: center; cursor: pointer; font-weight: 500; font-size: 0.85rem; border: none; background: transparent; color: #8a7a6a; transition: 0.15s; }
+.tab.active { color: #1a3a2a; border-bottom: 3px solid #1a3a2a; background: #f5f0eb; }
+.tab:hover { background: #ede5dd; }
+.tab-count { font-size: 0.7rem; color: #8a7a6a; margin-left: 0.3rem; }
+
+.toolbar { padding: 0.5rem 1rem; background: #fff; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.toolbar input { flex: 1; min-width: 120px; padding: 0.4rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; }
+.toolbar button { padding: 0.35rem 0.8rem; border: 1px solid #1a3a2a; border-radius: 6px; background: white; cursor: pointer; font-size: 0.75rem; white-space: nowrap; }
+.toolbar button:hover { background: #1a3a2a; color: white; }
+.toolbar .primary { background: #1a3a2a; color: white; }
+
+.summary-bar { display: flex; justify-content: center; gap: 0.8rem; padding: 0.6rem; background: #e8e0d8; flex-wrap: wrap; font-size: 0.8rem; }
+.summary-bar span { background: white; padding: 0.2rem 0.6rem; border-radius: 16px; }
+
+#exhibitContent, #imageBrowser { display: none; padding-bottom: 4rem; }
+#exhibitContent.active, #imageBrowser.active { display: block; }
+
+.theme-section { margin: 1rem; }
+.theme-header { background: #2d5a3e; color: #f5f0eb; padding: 0.6rem 1rem; border-radius: 8px 8px 0 0; font-size: 1rem; display: flex; justify-content: space-between; }
+.theme-header .progress { font-size: 0.75rem; color: #b8c9b0; }
+
+.exhibit-card { background: white; border: 1px solid #ddd; border-top: none; padding: 0.8rem 1rem; }
+.exhibit-card:last-child { border-radius: 0 0 8px 8px; margin-bottom: 0.5rem; }
+.exhibit-card:hover { background: #faf8f5; }
+
+.exhibit-title { font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }
+.exhibit-title .code { color: #8a7a6a; font-weight: 400; font-size: 0.75rem; }
+.exhibit-title .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot-pending { background: #ddd; }
+.dot-done { background: #2d5a3e; }
+
+.exhibit-desc { font-size: 0.8rem; color: #6a5a4a; margin: 0.3rem 0 0.5rem 0; font-style: italic; }
+.exhibit-body { display: none; margin-top: 0.5rem; }
+.exhibit-body.open { display: block; }
+.exhibit-terms { font-size: 0.75rem; color: #8a7a6a; margin-bottom: 0.5rem; }
+
+.section { margin-bottom: 0.8rem; }
+.section h4 { font-size: 0.8rem; color: #5a4a3a; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+
+.image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.6rem; }
+.image-card { border: 2px solid #eee; border-radius: 6px; overflow: hidden; transition: 0.15s; }
+.image-card.approved { border-color: #2d5a3e; }
+.image-card.declined { border-color: #b04040; opacity: 0.5; }
+.image-card img { width: 100%; height: 120px; object-fit: cover; display: block; background: #eee; }
+.image-card .img-missing { width: 100%; height: 120px; background: #eee; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.7rem; flex-direction: column; padding: 0.3rem; text-align: center; }
+.image-card .info { padding: 0.35rem; font-size: 0.7rem; }
+.image-card .info .title { font-weight: 500; }
+.image-card .info .meta { color: #8a7a6a; font-size: 0.65rem; }
+.image-card .actions { display: flex; border-top: 1px solid #eee; }
+.image-card .actions button { flex: 1; border: none; padding: 0.5rem 0.2rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.1s; min-height: 44px; }
+.btn-use { background: #e8f5e8; }
+.btn-use:hover, .btn-use.active { background: #2d5a3e; color: white; }
+.btn-skip { background: #fde8e8; }
+.btn-skip:hover, .btn-skip.active { background: #b04040; color: white; }
+.btn-maybe { background: #f5f0eb; }
+.btn-maybe:hover, .btn-maybe.active { background: #ddd; }
+
+.entity-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.entity-tag { background: #e8e0d8; padding: 0.4rem 0.6rem; border-radius: 6px; font-size: 0.85rem; cursor: default; display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid #d0c8b8; }
+.entity-tag .kind { color: #8a7a6a; font-size: 0.75rem; }
+.entity-tag.approved { background: #d4e8d4; }
+.entity-tag.declined { background: #e8d4d4; opacity: 0.6; }
+.entity-tag .act { cursor: pointer; margin-left: 0.2rem; font-size: 0.85rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: #d0c8b8; color: #2d2a24; font-weight: 600; }
+.entity-tag .act:hover { background: #1a3a2a; color: white; }
+.entity-text { border-left: 3px solid #ddd; background: #faf8f5; padding: 0.7rem; margin: 0.4rem 0; font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; max-height: 300px; overflow-y: auto; display: none; }
+.entity-text.open { display: block; }
+
+.source-item { cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.85rem; display: inline-block; margin: 0.2rem; background: #e8e0d8; border: 1px solid #d0c8b8; }
+.source-item:hover { background: #ddd; }
+.source-item.approved { background: #d4e8d4; }
+.source-item.declined { background: #e8d4d4; opacity: 0.6; }
+.source-text { border-left: 3px solid #ddd; background: #faf8f5; padding: 0.7rem; margin: 0.3rem 2rem; font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; max-height: 300px; overflow-y: auto; display: none; }
+.source-text.open { display: block; }
+
+.notes-area { margin-top: 0.4rem; }
+.notes-area textarea { width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 0.6rem; font-size: 0.85rem; font-family: inherit; resize: vertical; min-height: 60px; }
+.notes-area textarea:focus { outline: none; border-color: #2d5a3e; }
+.empty-msg { color: #aaa; font-style: italic; font-size: 0.8rem; padding: 0.3rem 0; }
+
+/* Image browser */
+.browser-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; padding: 1rem; }
+.browser-card { border: 1px solid #ddd; border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.1s; font-size: 0.7rem; position: relative; }
+.browser-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.browser-card.selected { border-color: #2d5a3e; box-shadow: 0 0 0 2px #2d5a3e; }
+.browser-card img { width: 100%; height: 100px; object-fit: cover; display: block; background: #eee; }
+.browser-card .check { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 4px; background: rgba(255,255,255,0.85); border: 2px solid #888; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: transparent; transition: 0.1s; z-index: 5; }
+.browser-card.selected .check { background: #2d5a3e; border-color: #2d5a3e; color: white; }
+.browser-card .assign-badge { position: absolute; top: 4px; right: 4px; background: #2d5a3e; color: white; font-size: 0.6rem; padding: 0.15rem 0.35rem; border-radius: 4px; font-weight: 600; z-index: 5; }
+.browser-card .assign-badge.multi { background: #1a3a2a; }
+.browser-card .b-info { padding: 0.3rem; }
+.browser-card .b-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.browser-card .b-meta { color: #8a7a6a; font-size: 0.65rem; }
+.browser-card .b-tags { margin-top: 0.2rem; display: flex; flex-wrap: wrap; gap: 0.2rem; }
+.browser-card { position: relative; }
+.browser-card .b-tags span { background: #e8e0d8; font-size: 0.6rem; padding: 0.1rem 0.3rem; border-radius: 3px; }
+.browser-toolbar { padding: 0.5rem 1rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+.browser-toolbar input { flex: 1; min-width: 120px; padding: 0.4rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; }
+.browser-toolbar select { padding: 0.35rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.75rem; }
+.selected-info { position: fixed; bottom: 0; left: 0; right: 0; background: #1a3a2a; color: #f5f0eb; padding: 0.6rem 1rem; display: none; align-items: center; gap: 0.5rem; font-size: 0.8rem; z-index: 200; }
+.selected-info.visible { display: flex; }
+.selected-info button { padding: 0.3rem 0.8rem; border: 1px solid #b8c9b0; border-radius: 6px; background: transparent; color: #f5f0eb; cursor: pointer; font-size: 0.75rem; }
+.selected-info button:hover { background: #b8c9b0; color: #1a3a2a; }
+
+.modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 300; justify-content: center; align-items: center; }
+.modal.visible { display: flex; }
+.modal-content { display: flex; flex-direction: column; align-items: center; max-width: 95vw; }
+.modal-content img { max-width: 90vw; max-height: 75vh; border-radius: 4px; }
+.modal-info { background: rgba(255,255,255,0.9); color: #2d2a24; padding: 0.8rem 1rem; margin-top: 0.5rem; border-radius: 6px; max-width: 90vw; text-align: left; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
+.modal-info .mi-title { font-weight: 600; font-size: 1rem; margin-bottom: 0.4rem; }
+.modal-info .mi-row { padding: 0.15rem 0; border-bottom: 1px solid #eee; }
+.modal-info .mi-row:last-child { border-bottom: none; }
+.modal-info .mi-label { font-weight: 600; color: #5a4a3a; min-width: 60px; display: inline-block; }
+.modal-info .mi-match { background: #e8f0e0; color: #2d5a3e; padding: 0.3rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin: 0.3rem 0; border-bottom: none; }
+.modal-close { position: absolute; top: 1rem; right: 1.5rem; color: white; font-size: 2rem; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Red River Metis National Heritage Centre — Exhibit Plan Review</h1>
+  <p>Review archive content for each exhibit · Read source material · Approve / Decline · Leave notes</p>
+  <div class="subtitle">Curator review dashboard — All images browseable · Full page content readable</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tabExhibits" onclick="switchTab('exhibits')">Exhibits <span class="tab-count" id="tabExCount">0</span></div>
+  <div class="tab" id="tabImages" onclick="switchTab('images')">All Images <span class="tab-count" id="tabImgCount">0</span></div>
+</div>
+
+<div class="summary-bar" id="summaryBar">
+  <span>Exhibits: <strong id="totalExhibits">0</strong></span>
+  <span>Images: <strong id="totalImages">0</strong></span>
+  <span>Approved: <strong id="approvedCount">0</strong></span>
+  <span>Declined: <strong id="declinedCount">0</strong></span>
+  <span>With notes: <strong id="notesCount">0</strong></span>
+  <span>Undecided: <strong id="undecidedCount">0</strong></span>
+</div>
+
+<div class="toolbar">
+  <button class="primary" onclick="saveFeedback()">Save Feedback</button>
+  <button onclick="loadFeedback()">Load Feedback</button>
+  <button onclick="exportReport()">Export Report</button>
+  <button onclick="clearAll()">Clear All</button>
+  <input type="text" id="exSearch" placeholder="Search exhibits..." oninput="renderExhibits()">
+</div>
+
+<div id="exhibitContent" class="active"></div>
+
+<div id="imageBrowser">
+  <div class="browser-toolbar">
+    <input type="text" id="imgSearch" placeholder="Search images..." oninput="renderImageBrowser()">
+    <select id="imgFilter" onchange="renderImageBrowser()">
+      <option value="">All images</option>
+    </select>
+    <button onclick="clearImageSelection()">Clear selection</button>
+    <span style="font-size:0.75rem;color:#8a7a6a;" id="imgSelCount">0 selected</span>
+  </div>
+  <div class="browser-grid" id="browserGrid"></div>
+</div>
+
+<div class="selected-info" id="selectedInfo">
+  <span id="selectedLabel">0 images selected</span>
+  <button onclick="assignSelectedToExhibit()" style="background:#2d5a3e;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;">Assign to exhibit...</button>
+  <button onclick="clearImageSelection()" style="background:transparent;color:#b8c9b0;border:1px solid #b8c9b0;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-size:0.85rem;">Clear</button>
+</div>
+
+<div class="modal" id="modal" onclick="this.classList.remove('visible')">
+  <span class="modal-close">&times;</span>
+  <div class="modal-content">
+    <img id="modalImage" src="" alt="">
+    <div id="modalInfo" class="modal-info"></div>
+  </div>
+</div>
+
+<script>
+const EXHIBITS = __DATA_JSON__;
+const ALL_IMAGES = __IMAGES_JSON__;
+
+let feedback = {};
+
+// ── Init ──
+function initFeedback() {
+  // Restore from localStorage first
+  try {
+    var saved = localStorage.getItem('exhibitFeedback');
+    if (saved) { feedback = JSON.parse(saved); }
+  } catch(e) {}
+  EXHIBITS.forEach(function(e) {
+    var code = e.code;
+    if (!feedback[code]) feedback[code] = { notes: '', images: {}, entities: {}, sources: {} };
+    (e.images||[]).forEach(function(img) { if (!feedback[code].images[img.filename]) feedback[code].images[img.filename] = 'none'; });
+    (e.entities||[]).forEach(function(ent) { if (!feedback[code].entities[ent.name]) feedback[code].entities[ent.name] = 'none'; });
+    (e.raw_sources||[]).forEach(function(s) { if (!feedback[code].sources[s.name]) feedback[code].sources[s.name] = 'none'; });
+  });
+  updateSummary();
+  buildImageFilters();
+  renderExhibits();
+  renderImageBrowser();
+}
+
+function gs(code, type, key) {
+  if (!feedback[code] || !feedback[code][type]) return 'none';
+  return feedback[code][type][key] || 'none';
+}
+
+function ss(code, type, key, val) {
+  if (!feedback[code]) feedback[code] = { notes: '', images: {}, entities: {}, sources: {} };
+  if (!feedback[code][type]) feedback[code][type] = {};
+  feedback[code][type][key] = val;
+  updateSummary();
+  renderExhibits();
+}
+
+function sn(code, val) {
+  if (!feedback[code]) feedback[code] = { notes: '', images: {}, entities: {}, sources: {} };
+  feedback[code].notes = val;
+  updateSummary();
+}
+
+function gn(code) { return (feedback[code] && feedback[code].notes) || ''; }
+
+function updateSummary() {
+  var a=0,d=0,nc=0,u=0,ti=0,te=0;
+  EXHIBITS.forEach(function(e) {
+    var code = e.code, f = feedback[code];
+    if (!f) return; te++;
+    ['images','entities','sources'].forEach(function(t) {
+      if (!f[t]) return;
+      for (var k in f[t]) { var v=f[t][k]; if(v==='approved')a++; else if(v==='declined')d++; else u++; }
+    });
+    ti += (e.images||[]).length;
+    if (f.notes && f.notes.trim()) nc++;
+  });
+  document.getElementById('approvedCount').textContent = a;
+  document.getElementById('declinedCount').textContent = d;
+  document.getElementById('notesCount').textContent = nc;
+  document.getElementById('undecidedCount').textContent = u;
+  document.getElementById('totalExhibits').textContent = EXHIBITS.length;
+  document.getElementById('totalImages').textContent = ti;
+}
+
+// ── Tab switching ──
+function switchTab(name) {
+  document.getElementById('tabExhibits').classList.toggle('active', name==='exhibits');
+  document.getElementById('tabImages').classList.toggle('active', name==='images');
+  document.getElementById('exhibitContent').classList.toggle('active', name==='exhibits');
+  document.getElementById('imageBrowser').classList.toggle('active', name==='images');
+}
+
+// ── Render Exhibits ──
+function renderExhibits() {
+  var search = (document.getElementById('exSearch').value||'').toLowerCase();
+  var themes = []; var seen = {};
+  EXHIBITS.forEach(function(e) { if (!seen[e.theme]) { seen[e.theme]=true; themes.push(e.theme); } });
+
+  var html = '';
+  var totalEx = 0, totalIm = 0;
+
+  themes.forEach(function(theme) {
+    var exs = EXHIBITS.filter(function(e) { return e.theme === theme; });
+    var th = '';
+    var tItems = 0, tReviewed = 0;
+
+    exs.forEach(function(e) {
+      var code = e.code;
+      if (search && code.indexOf(search)===-1 && e.title.toLowerCase().indexOf(search)===-1) return;
+      totalEx++;
+
+      var hasC = (e.images||[]).length > 0 || (e.entities||[]).length > 0 || (e.raw_sources||[]).length > 0;
+      totalIm += (e.images||[]).length;
+
+      var ar = true;
+      if (feedback[code]) {
+        ['images','entities','sources'].forEach(function(t) {
+          if (!feedback[code][t]) { ar=false; return; }
+          for (var k in feedback[code][t]) { if (feedback[code][t][k]==='none') ar=false; }
+        });
+      } else { ar = false; }
+      if (!ar && hasC) tReviewed++;
+
+      var dot = ar && hasC ? 'dot-done' : 'dot-pending';
+      var hn = (gn(code)||'').trim().length > 0;
+      var ni = hn ? ' <span style="font-size:0.65rem;color:#f0a030;">note</span>' : '';
+
+      th += '<div class="exhibit-card"><div class="exhibit-title" onclick="tb(\''+code+'\')">'
+        + '<span class="status-dot '+dot+'"></span>'
+        + '<span class="code">'+code+'</span> '+e.title+ni
+        + '<span style="margin-left:auto;font-size:0.7rem;color:#8a7a6a;">'
+        + (e.images||[]).length+' imgs · '+(e.entities||[]).length+' pages</span></div>';
+      if (e.description) th += '<div class="exhibit-desc">'+escapeHtml(e.description)+'</div>';
+      th += '<div class="exhibit-body" id="b-'+code+'">';
+      if (e.terms && e.terms.length) th += '<div class="exhibit-terms">Search: '+e.terms.join(', ')+'</div>';
+
+      // Images
+      if ((e.images||[]).length > 0) {
+        th += '<div class="section"><h4>Images ('+e.images.length+')</h4><div class="image-grid">';
+        e.images.forEach(function(img) {
+          var st = gs(code,'images',img.filename);
+          var cc = st==='approved'?'approved':st==='declined'?'declined':'';
+          var fullUrl2 = img.url || 'images/' + img.filename;
+          var matchTerms = (img.matched_terms||[]).join(', ');
+          var ic = img.thumbnail_b64
+            ? '<img src="'+img.thumbnail_b64+'" alt="'+img.filename+'" loading="lazy" onclick="showModal(\''+fullUrl2+'\',\''+img.filename+'\',\''+matchTerms+'\')">'
+            : '<img src="'+fullUrl2+'" alt="'+img.filename+'" loading="lazy" onclick="showModal(\''+fullUrl2+'\',\''+img.filename+'\',\''+matchTerms+'\')" onerror="this.outerHTML=\'<div class=img-missing>'+img.filename+'<br><small>awaiting download</small></div>\'">';
+          th += '<div class="image-card '+cc+'">'+ic
+            +'<div class="info"><div class="title">'+escapeHtml(img.title)+'</div>'
+            +'<div class="meta">'+escapeHtml(img.source)+'</div>'
+            +'<div class="meta">'+img.license+(img.date?' / '+img.date:'')+'</div></div>'
+            +'<div class="actions">'
+            +'<button class="btn-use'+(st==='approved'?' active':'')+'" onclick="event.stopPropagation();ss('+"'"+code+"'"+','+"'images'"+','+"'"+img.filename+"'"+','+"'approved'"+');">Use</button>'
+            +'<button class="btn-maybe'+(st==='none'?' active':'')+'" onclick="event.stopPropagation();ss('+"'"+code+"'"+','+"'images'"+','+"'"+img.filename+"'"+','+"'none'"+');">?</button>'
+            +'<button class="btn-skip'+(st==='declined'?' active':'')+'" onclick="event.stopPropagation();ss('+"'"+code+"'"+','+"'images'"+','+"'"+img.filename+"'"+','+"'declined'"+');">Skip</button>'
+            +'</div></div>';
+        });
+        th += '</div></div>';
+      }
+
+      // Entities
+      if ((e.entities||[]).length > 0) {
+        th += '<div class="section"><h4>Archive Content Pages ('+e.entities.length+')</h4><div class="entity-list">';
+        e.entities.forEach(function(ent) {
+          var st = gs(code,'entities',ent.name);
+          var bg = st==='approved'?'approved':st==='declined'?'declined':'';
+          th += '<span class="entity-tag '+bg+'">'+ent.name+' <span class="kind">('+ent.kind+')</span>'
+            +'<span class="act" onclick="event.stopPropagation();ss(\''+code+'\',\'entities\',\''+ent.name+'\',\'approved\');">+ Use</span>'
+            +'<span class="act" onclick="event.stopPropagation();ss(\''+code+'\',\'entities\',\''+ent.name+'\',\'declined\');">− Skip</span>'
+            +'<span class="act" style="background:#2d5a3e;color:white;" onclick="event.stopPropagation();toggleEntityText(\''+code+'\',\''+ent.name+'\')"><b>Read</b></span>'
+            +'</span>';
+          if (ent.text) {
+            var entMatch = (ent.matched_terms||[]).join(', ');
+            th += '<div class="entity-text" id="et-'+code+'-'+ent.name+'">';
+            if (entMatch) th += '<div class="mi-match" style="margin:0.3rem 0;">Matched to this exhibit by: '+escapeHtml(entMatch)+'</div>';
+            th += escapeHtml(ent.text)+'</div>';
+          }
+        });
+        th += '</div></div>';
+      }
+
+      // Sources
+      if ((e.raw_sources||[]).length > 0) {
+        th += '<div class="section"><h4>Raw Source Files ('+e.raw_sources.length+')</h4>';
+        e.raw_sources.forEach(function(s) {
+          var st = gs(code,'sources',s.name);
+          var bg = st==='approved'?'approved':st==='declined'?'declined':'';
+          th += '<div><span class="source-item '+bg+'" onclick="cycSrc(\''+code+'\',\''+s.name+'\')">'
+            +(st==='approved'?'Y':st==='declined'?'N':'-')+' '+s.name+'</span>'
+            +'<span style="font-size:0.7rem;color:#8a7a6a;cursor:pointer;margin-left:0.3rem;" onclick="event.stopPropagation();toggleSourceText(\''+code+'\',\''+s.name+'\')">read</span>';
+          if (s.text) {
+            th += '<div class="source-text" id="st-'+code+'-'+s.name+'">'+escapeHtml(s.text)+'</div>';
+          }
+          th += '</div>';
+        });
+        th += '</div>';
+      }
+
+      // Notes
+      th += '<div class="notes-area"><textarea placeholder="Notes for this exhibit..." onchange="sn(\''+code+'\',this.value)" id="n-'+code+'">'+(gn(code)||'')+'</textarea></div>';
+
+      th += '</div></div>';
+      tItems++;
+    });
+
+    if (th) {
+      html += '<div class="theme-section"><div class="theme-header"><span>'+theme+'</span><span class="progress">'+tReviewed+'/'+tItems+' reviewed</span></div>'+th+'</div>';
+    }
+  });
+
+  document.getElementById('exhibitContent').innerHTML = html || '<div style="text-align:center;padding:3rem;color:#aaa;">No exhibits match.</div>';
+  document.getElementById('tabExCount').textContent = EXHIBITS.length;
+  document.getElementById('tabImgCount').textContent = ALL_IMAGES.length;
+}
+
+function tb(code) { var el=document.getElementById('b-'+code); if(el) el.classList.toggle('open'); }
+function toggleEntityText(code, name) { var el=document.getElementById('et-'+code+'-'+name); if(el) el.classList.toggle('open'); }
+function toggleSourceText(code, name) { var el=document.getElementById('st-'+code+'-'+name); if(el) el.classList.toggle('open'); }
+function cycSrc(code, name) {
+  var st = gs(code,'sources',name);
+  var n = st==='none'?'approved':st==='approved'?'declined':'none';
+  ss(code,'sources',name,n);
+}
+
+function escapeHtml(s) { if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showModal(src, filename, matchTerms) {
+  document.getElementById('modalImage').src = src;
+  // Look up full metadata from ALL_IMAGES
+  var meta = null;
+  ALL_IMAGES.forEach(function(ai) { if (ai.filename === filename) meta = ai; });
+  var info = '';
+  if (meta) {
+    if (matchTerms) info += '<div class="mi-match">Matched to this exhibit by: '+escapeHtml(matchTerms)+'</div>';
+    if (meta.filename) info += '<div class="mi-row"><span class="mi-label">File:</span> '+escapeHtml(meta.filename)+'</div>';
+    if (meta.title) info += '<div class="mi-title">'+escapeHtml(meta.title)+'</div>';
+    if (meta.source) info += '<div class="mi-row"><span class="mi-label">Source:</span> '+escapeHtml(meta.source)+'</div>';
+    if (meta.license && meta.license !== 'Unknown') info += '<div class="mi-row"><span class="mi-label">License:</span> '+escapeHtml(meta.license)+'</div>';
+    if (meta.date) info += '<div class="mi-row"><span class="mi-label">Date:</span> '+escapeHtml(meta.date)+'</div>';
+    if (meta.tags && meta.tags.length) info += '<div class="mi-row"><span class="mi-label">Tags:</span> '+escapeHtml(meta.tags.join(', '))+'</div>';
+    if (meta.notes) info += '<div class="mi-row"><span class="mi-label">Notes:</span> '+escapeHtml(meta.notes)+'</div>';
+    if (!meta.title && !meta.source && !meta.license && !meta.date && !meta.notes) {
+      info += '<div class="mi-row" style="color:#aaa;font-style:italic;">No metadata available</div>';
+    }
+  } else {
+    info += '<div class="mi-row" style="color:#aaa;font-style:italic;">Image not found in manifest</div>';
+  }
+  document.getElementById('modalInfo').innerHTML = info;
+  document.getElementById('modal').classList.add('visible');
+}
+
+// ── Image Browser ──
+function buildImageFilters() {
+  var tags = {};
+  EXHIBITS.forEach(function(e) {
+    if (!tags[e.theme]) tags[e.theme]=0;
+    tags[e.theme]++;
+  });
+  var sel = document.getElementById('imgFilter');
+  sel.innerHTML = '<option value="">All images</option>';
+}
+
+function renderImageBrowser() {
+  var search = (document.getElementById('imgSearch').value||'').toLowerCase();
+  var grid = document.getElementById('browserGrid');
+  var html = '';
+  var count = 0;
+
+  ALL_IMAGES.forEach(function(img) {
+    var title = (img.title||'').toLowerCase();
+    var fn = img.filename.toLowerCase();
+    if (search && title.indexOf(search)===-1 && fn.indexOf(search)===-1) return;
+    count++;
+
+    var sel = (selectedImages.indexOf(img.filename) !== -1) ? 'selected' : '';
+    var fullUrl2 = img.url || 'images/' + img.filename;
+    var ic = img.thumbnail_b64
+      ? '<img src="'+img.thumbnail_b64+'" alt="'+img.filename+'" loading="lazy" onclick="event.stopPropagation();showModal('+"'"+fullUrl2+"'"+','+"'"+img.filename+"'"+')">'
+      : '<img src="'+fullUrl2+'" alt="'+img.filename+'" loading="lazy" onclick="event.stopPropagation();showModal('+"'"+fullUrl2+"'"+','+"'"+img.filename+"'"+')" onerror="this.outerHTML=\'<div class=img-missing>'+img.filename+'<br><small>awaiting download</small></div>\'">';
+    var check = '<div class="check">'+(sel?'✓':'')+'</div>';
+    // Check if assigned to any exhibit
+    var badge = '';
+    var assigns = [];
+    EXHIBITS.forEach(function(e) {
+      (e.images||[]).forEach(function(ei) {
+        if (ei.filename === img.filename) assigns.push(e.code);
+      });
+    });
+    if (assigns.length > 0) {
+      badge = '<div class="assign-badge'+(assigns.length>1?' multi':'')+'">'+assigns[0]+(assigns.length>1?' +'+(assigns.length-1):'')+'</div>';
+    }
+    html += '<div class="browser-card '+sel+'" onclick="toggleImageSel(\''+img.filename+'\')">'+check+badge+ic
+      +'<div class="b-info"><div class="b-title">'+escapeHtml((img.title||'').slice(0,60))+'</div>'
+      +'<div class="b-meta">'+escapeHtml((img.source||'').slice(0,60))+'</div>'
+      +'<div class="b-tags">'+(img.tags||[]).slice(0,6).map(function(t){return '<span>'+escapeHtml(t)+'</span>';}).join('')+'</div>'
+      +'</div></div>';
+  });
+
+  grid.innerHTML = html || '<div style="text-align:center;padding:2rem;color:#aaa;">No images match.</div>';
+  document.getElementById('imgSelCount').textContent = selectedImages.length+' selected';
+  document.getElementById('selectedLabel').textContent = selectedImages.length+' images selected';
+  document.getElementById('selectedInfo').classList.toggle('visible', selectedImages.length > 0);
+}
+
+var selectedImages = [];
+function toggleImageSel(fn) {
+  var idx = selectedImages.indexOf(fn);
+  if (idx === -1) selectedImages.push(fn);
+  else selectedImages.splice(idx, 1);
+  renderImageBrowser();
+}
+function clearImageSelection() { selectedImages = []; renderImageBrowser(); }
+
+function assignSelectedToExhibit() {
+  if (!selectedImages.length) return;
+  var sel = document.getElementById('assignExhibitSelect');
+  if (!sel) {
+    // Build dropdown on first use
+    var div = document.createElement('div');
+    div.id = 'assignExhibitPanel';
+    div.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border:2px solid #1a3a2a;border-radius:12px;padding:1.5rem;z-index:400;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:90vw;max-height:80vh;overflow-y:auto;';
+    div.innerHTML = '<h3 style="margin-bottom:0.5rem;">Assign '+selectedImages.length+' images</h3>'
+      + '<select id="assignExhibitSelect" size="10" style="width:100%;font-size:0.9rem;padding:0.3rem;border:1px solid #ddd;border-radius:6px;">'
+      + EXHIBITS.map(function(e){return '<option value="'+e.code+'">'+e.code+' — '+e.title+'</option>';}).join('')
+      + '</select>'
+      + '<div style="margin-top:0.8rem;display:flex;gap:0.5rem;">'
+      + '<button onclick="doAssignImages()" style="flex:1;background:#2d5a3e;color:white;border:none;padding:0.6rem;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Assign</button>'
+      + '<button onclick="closeAssignPanel()" style="flex:1;background:#ddd;border:none;padding:0.6rem;border-radius:6px;cursor:pointer;font-size:0.9rem;">Cancel</button>'
+      + '</div>';
+    document.body.appendChild(div);
+  } else {
+    document.getElementById('assignExhibitPanel').style.display = 'block';
+    document.getElementById('assignExhibitPanel').querySelector('h3').textContent = 'Assign '+selectedImages.length+' images';
+  }
+}
+function closeAssignPanel() {
+  document.getElementById('assignExhibitPanel').style.display = 'none';
+}
+function doAssignImages() {
+  var sel = document.getElementById('assignExhibitSelect');
+  var code = sel.value;
+  if (!code) return;
+  selectedImages.forEach(function(fn) {
+    var exists = false;
+    EXHIBITS.forEach(function(e) {
+      if (e.code === code) {
+        (e.images||[]).forEach(function(img) { if (img.filename === fn) exists = true; });
+        if (!exists) {
+          ALL_IMAGES.forEach(function(ai) {
+            if (ai.filename === fn) {
+              if (!e.images) e.images = [];
+              e.images.push({filename:ai.filename,title:ai.title,source:ai.source,license:ai.license,date:ai.date,thumbnail_b64:ai.thumbnail_b64});
+            }
+          });
+        }
+      }
+    });
+  });
+  closeAssignPanel();
+  clearImageSelection();
+  renderExhibits();
+  renderImageBrowser();
+  // Save to localStorage for persistence
+  saveFeedbackToLocal();
+  // Also persist assignments to localStorage
+  try { localStorage.setItem('exhibitAssignments', JSON.stringify(
+    EXHIBITS.map(function(e){return {code:e.code,images:(e.images||[]).map(function(i){return i.filename;})};})
+  )); } catch(e) {}
+}
+function saveFeedbackToLocal() {
+  try { localStorage.setItem('exhibitFeedback', JSON.stringify(feedback)); } catch(e) {}
+}
+
+// ── Save / Load / Export ──
+function saveFeedback() {
+  var blob = new Blob([JSON.stringify(feedback,null,2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'curator-feedback-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+function loadFeedback() {
+  var input = document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange = function(e) {
+    var file=e.target.files[0]; if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev) {
+      try { var d=JSON.parse(ev.target.result); feedback=d; initFeedback(); alert('Loaded '+Object.keys(d).length+' exhibit feedbacks.'); }
+      catch(err) { alert('Could not parse feedback file.'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function exportReport() {
+  var lines = ['# Metis Trail - Curator Review Report', 'Generated: '+new Date().toLocaleDateString(), ''];
+  EXHIBITS.forEach(function(e) {
+    var f=feedback[e.code]; if(!f)return;
+    var im=Object.entries(f.images||{}).filter(function(x){return x[1]!=='none';});
+    var en=Object.entries(f.entities||{}).filter(function(x){return x[1]!=='none';});
+    var sr=Object.entries(f.sources||{}).filter(function(x){return x[1]!=='none';});
+    if(!im.length&&!en.length&&!sr.length&&!(f.notes||'').trim())return;
+    lines.push('## '+e.code+' - '+e.title,'');
+    im.forEach(function(x){lines.push('- ['+(x[1]==='approved'?'x':' ')+'] Image: '+x[0]);});
+    en.forEach(function(x){lines.push('- ['+(x[1]==='approved'?'x':' ')+'] Page: '+x[0]);});
+    sr.forEach(function(x){lines.push('- ['+(x[1]==='approved'?'x':' ')+'] Source: '+x[0]);});
+    if((f.notes||'').trim()) lines.push('Notes: '+f.notes.trim());
+    lines.push('');
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='curator-report-'+new Date().toISOString().slice(0,10)+'.txt'; a.click();
+}
+
+function clearAll() {
+  if(!confirm('Clear all feedback?')) return;
+  feedback={}; initFeedback();
+}
+
+initFeedback();
+</script>
+</body>
+</html>
