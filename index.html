@@ -292,9 +292,10 @@ function renderExhibits() {
         e.images.forEach(function(img) {
           var st = gs(code,'images',img.filename);
           var cc = st==='approved'?'approved':st==='declined'?'declined':'';
+          var fullUrl2 = img.url || 'images/' + img.filename;
           var ic = img.thumbnail_b64
-            ? '<img src="'+img.thumbnail_b64+'" alt="'+img.filename+'" loading="lazy" onclick="showModal(\''+img.thumbnail_b64+'\')">'
-            : '<div class="img-missing">'+img.filename+'<br><small>awaiting download</small></div>';
+            ? '<img src="'+img.thumbnail_b64+'" alt="'+img.filename+'" loading="lazy" onclick="showModal(\''+fullUrl2+'\')">'
+            : '<img src="'+fullUrl2+'" alt="'+img.filename+'" loading="lazy" onclick="showModal(\''+fullUrl2+'\')" onerror="this.outerHTML=\'<div class=img-missing>'+img.filename+'<br><small>awaiting download</small></div>\'">';
           th += '<div class="image-card '+cc+'">'+ic
             +'<div class="info"><div class="title">'+escapeHtml(img.title)+'</div>'
             +'<div class="meta">'+escapeHtml(img.source)+'</div>'
@@ -400,9 +401,10 @@ function renderImageBrowser() {
     count++;
 
     var sel = (selectedImages.indexOf(img.filename) !== -1) ? 'selected' : '';
+    var fullUrl2 = img.url || 'images/' + img.filename;
     var ic = img.thumbnail_b64
-      ? '<img src="'+img.thumbnail_b64+'" alt="'+img.filename+'" loading="lazy">'
-      : '<div class="img-missing">'+img.filename+'<br><small>awaiting download</small></div>';
+      ? '<img src="'+img.thumbnail_b64+'" alt="'+img.filename+'" loading="lazy" onclick="event.stopPropagation();showModal(\''+fullUrl2+'\')">'
+      : '<img src="'+fullUrl2+'" alt="'+img.filename+'" loading="lazy" onclick="event.stopPropagation();showModal(\''+fullUrl2+'\')" onerror="this.outerHTML=\'<div class=img-missing>'+img.filename+'<br><small>awaiting download</small></div>\'">';
     html += '<div class="browser-card '+sel+'" onclick="toggleImageSel(\''+img.filename+'\')">'+ic
       +'<div class="b-info"><div class="b-title">'+escapeHtml((img.title||'').slice(0,60))+'</div>'
       +'<div class="b-meta">'+escapeHtml((img.source||'').slice(0,60))+'</div>'
